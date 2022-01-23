@@ -1,5 +1,6 @@
 ﻿using ATMService.DAL.Entities;
 using ATMService.DAL.Repositories.Base;
+using System.Threading.Tasks;
 
 namespace ATMService.DAL.Repositories
 {
@@ -9,5 +10,11 @@ namespace ATMService.DAL.Repositories
     /// </summary>
     public interface IMoneyStorageRepository : ICRUDRepository<MoneyStorage>
     {
+
+        /// <summary>
+        /// Calculate balance of ATM storage
+        /// </summary>
+        /// <returns>Balance</returns>
+        Task<long> GetBalanceAsync();
     }
 }

@@ -40,5 +40,11 @@ namespace ATMService.DAL.Repositories.Base
         /// <param name="saveChanges">Save changes if required (default=true)</param>
         /// <returns></returns>
         Task DeleteAllAsync(bool saveChanges = true);
+
+        /// <summary>
+        /// Save database changes
+        /// </summary>
+        /// <returns></returns>
+        Task<int> SaveChangesAsync();
     }
 }

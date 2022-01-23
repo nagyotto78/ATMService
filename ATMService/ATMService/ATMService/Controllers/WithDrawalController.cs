@@ -1,4 +1,5 @@
-﻿using ATMService.Services;
+﻿using ATMService.Models;
+using ATMService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -33,9 +34,28 @@ namespace ATMService.Controllers
         /// <param name="data">Required money</param>
         /// <returns>Withdrawn money per denomination</returns>
         [HttpPost]
-        public async Task<Dictionary<string, int>> WithDrawalAsync([FromBody] long data)
+        public async Task<IActionResult> WithDrawalAsync([FromBody] long data)
         {
-            return await _service.WithDrawalAsync(data);
+            IActionResult retVal = null;
+            OperationResult<Dictionary<string, int>> result = await _service.WithDrawalAsync(data);
+            if (result != null)
+            {
+                switch (result.ResultCode)
+                {
+                    case Enums.ResultCode.Success:
+                        retVal = Ok(result.Result);
+                        break;
+                    case Enums.ResultCode.WithDrawalInvalidNumber:
+                        retVal = BadRequest($"The value must be divisible by 1000. ({data})");
+                        break;
+                    case Enums.ResultCode.WithDrawalCanNotServed:
+                        retVal = StatusCode(503, $"Invalid denominations counts: {result.ErrorMessage}");
+                        break;
+                }
+            }
+            retVal ??= BadRequest("Invalid operation result."); //Invalid process result
+
+            return retVal;
         }
     }
 }

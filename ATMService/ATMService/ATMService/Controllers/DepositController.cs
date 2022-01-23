@@ -1,6 +1,8 @@
-﻿using ATMService.Services;
+﻿using ATMService.Models;
+using ATMService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -26,15 +28,42 @@ namespace ATMService.Controllers
             _service = service;
         }
 
+
         /// <summary>
-        /// Money withdrawal 
+        /// Money deposit 
         /// </summary>
         /// <param name="data">Money deposit per denomination</param>
         /// <returns>Money balance</returns>
         [HttpPost]
-        public async Task<long> DepositAsync(Dictionary<string, int> data)
+        public async Task<IActionResult> DepositAsync(Dictionary<string, int> data)
         {
-            return await _service.DepositAsync(data);
+            IActionResult retVal = null;
+            string logMessage = null;
+
+            OperationResult<long> result = await _service.DepositAsync(data);
+            if (result != null)
+            {
+                switch (result.ResultCode)
+                {
+                    case Enums.ResultCode.Success:
+                        _logger.LogInformation($"ATM Balance: {result.Result}");
+                        retVal = Ok(result.Result);
+                        break;
+                    case Enums.ResultCode.DepositError:
+                        logMessage = $"ERROR-400.1 - Invalid input data: {Environment.NewLine}{result.ErrorMessage}";
+                        _logger.LogError(logMessage);
+                        retVal = BadRequest(logMessage);
+                        break;
+                }
+            }
+            if (retVal == null)
+            {
+                logMessage = "ERROR-400.2 - Invalid process result.";
+                _logger.LogError(logMessage);
+                retVal = BadRequest(logMessage); //Invalid process result
+            }
+
+            return retVal;
         }
     }
 }
