@@ -1,0 +1,8 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/ATMService/ATMService/.vs/ATMService
+/ATMService/ATMService/ATMService/bin/Debug/net5.0
+/ATMService/ATMService/ATMService/obj
