@@ -1,10 +1,15 @@
+using ATMService.DAL;
+using ATMService.DAL.Repositories;
 using ATMService.Services;
+using ATMService.Utils;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace ATMService
 {
@@ -26,6 +31,12 @@ namespace ATMService
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "ATMService", Version = "v1" });
             });
+
+            // Database context and repositories
+            string connectionString = DataUtils.ResolveDbConnectionString(Configuration, Environment.CurrentDirectory, ATMDbContext.CONNECTION_STRING_KEY);
+            services.AddDbContextPool<ATMDbContext>(options => options.UseSqlServer(connectionString));
+            services.AddTransient<IMoneyDenominationRepository, MoneyDenominationRepository>();
+            services.AddTransient<IMoneyStorageRepository, MoneyStorageRepository>();
 
             // Add ATM Business logic service
             services.AddTransient<IATMService, Services.ATMService>();
