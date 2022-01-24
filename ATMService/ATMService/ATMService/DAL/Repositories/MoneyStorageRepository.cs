@@ -20,7 +20,7 @@ namespace ATMService.DAL.Repositories
         /// Calculate balance of ATM storage
         /// </summary>
         /// <returns>Balance</returns>
-        public async Task<long> GetBalanceAsync()
+        public async Task<int> GetBalanceAsync()
         {
             return await _entities.SumAsync(i => i.MoneyDenomination.Value * i.Count);
         }

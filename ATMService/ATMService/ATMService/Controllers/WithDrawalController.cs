@@ -2,9 +2,8 @@
 using ATMService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace ATMService.Controllers
@@ -34,26 +33,34 @@ namespace ATMService.Controllers
         /// <param name="data">Required money</param>
         /// <returns>Withdrawn money per denomination</returns>
         [HttpPost]
-        public async Task<IActionResult> WithDrawalAsync([FromBody] long data)
+        public async Task<IActionResult> WithDrawalAsync([FromBody] int data)
         {
             IActionResult retVal = null;
             OperationResult<Dictionary<string, int>> result = await _service.WithDrawalAsync(data);
-            if (result != null)
+            string logMessage;
+
+            switch (result?.ResultCode)
             {
-                switch (result.ResultCode)
-                {
-                    case Enums.ResultCode.Success:
-                        retVal = Ok(result.Result);
-                        break;
-                    case Enums.ResultCode.WithDrawalInvalidNumber:
-                        retVal = BadRequest($"The value must be divisible by 1000. ({data})");
-                        break;
-                    case Enums.ResultCode.WithDrawalCanNotServed:
-                        retVal = StatusCode(503, $"Invalid denominations counts: {result.ErrorMessage}");
-                        break;
-                }
+                case Enums.ResultCode.Success:
+                    _logger.LogInformation($"Withdrawed money: {JsonSerializer.Serialize(result.Result)}");
+                    retVal = Ok(result.Result);
+                    break;
+                case Enums.ResultCode.WithDrawalInvalidNumber:
+                    logMessage = $"ERROR-400.3 - The value must be divisible by 1000 and greater than zero. ({data})";
+                    _logger.LogError(logMessage);
+                    retVal = BadRequest(logMessage);
+                    break;
+                case Enums.ResultCode.WithDrawalNotPossible:
+                    logMessage = $"ERROR-503.4 - Withdrawal is not possible ({data})";
+                    _logger.LogError(logMessage);
+                    retVal = StatusCode(503, logMessage);
+                    break;
+                default:
+                    logMessage = "ERROR-400.5 - Invalid withdrawal process result.";
+                    _logger.LogError(logMessage);
+                    retVal = BadRequest(logMessage); //Invalid process result
+                    break;
             }
-            retVal ??= BadRequest("Invalid operation result."); //Invalid process result
 
             return retVal;
         }

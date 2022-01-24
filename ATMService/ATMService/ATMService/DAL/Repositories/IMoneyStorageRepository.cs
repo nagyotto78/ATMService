@@ -15,6 +15,6 @@ namespace ATMService.DAL.Repositories
         /// Calculate balance of ATM storage
         /// </summary>
         /// <returns>Balance</returns>
-        Task<long> GetBalanceAsync();
+        Task<int> GetBalanceAsync();
     }
 }

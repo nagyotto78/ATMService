@@ -38,29 +38,25 @@ namespace ATMService.Controllers
         public async Task<IActionResult> DepositAsync(Dictionary<string, int> data)
         {
             IActionResult retVal = null;
-            string logMessage = null;
+            OperationResult<int> result = await _service.DepositAsync(data);
+            string logMessage;
 
-            OperationResult<long> result = await _service.DepositAsync(data);
-            if (result != null)
+            switch (result?.ResultCode)
             {
-                switch (result.ResultCode)
-                {
-                    case Enums.ResultCode.Success:
-                        _logger.LogInformation($"ATM Balance: {result.Result}");
-                        retVal = Ok(result.Result);
-                        break;
-                    case Enums.ResultCode.DepositError:
-                        logMessage = $"ERROR-400.1 - Invalid input data: {Environment.NewLine}{result.ErrorMessage}";
-                        _logger.LogError(logMessage);
-                        retVal = BadRequest(logMessage);
-                        break;
-                }
-            }
-            if (retVal == null)
-            {
-                logMessage = "ERROR-400.2 - Invalid process result.";
-                _logger.LogError(logMessage);
-                retVal = BadRequest(logMessage); //Invalid process result
+                case Enums.ResultCode.Success:
+                    _logger.LogInformation($"ATM Balance: {result.Result}");
+                    retVal = Ok(result.Result);
+                    break;
+                case Enums.ResultCode.DepositError:
+                    logMessage = $"ERROR-400.1 - Invalid input data: {Environment.NewLine}{result.ErrorMessage}";
+                    _logger.LogError(logMessage);
+                    retVal = BadRequest(logMessage);
+                    break;
+                default:
+                    logMessage = "ERROR-400.2 - Invalid dposit process result.";
+                    _logger.LogError(logMessage);
+                    retVal = BadRequest(logMessage); //Invalid process result
+                    break;
             }
 
             return retVal;

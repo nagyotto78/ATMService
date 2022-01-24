@@ -16,14 +16,14 @@ namespace ATMService.Services
         /// </summary>
         /// <param name="data">Required money</param>
         /// <returns>Money denominations and counts</returns>
-        Task<OperationResult<Dictionary<string, int>>> WithDrawalAsync(long data);
+        Task<OperationResult<Dictionary<string, int>>> WithDrawalAsync(int data);
 
         /// <summary>
         /// Money deposit
         /// </summary>
         /// <param name="data">Money denominations and counts</param>
         /// <returns>ATM balance</returns>
-        Task<OperationResult<long>> DepositAsync(Dictionary<string, int> data);
+        Task<OperationResult<int>> DepositAsync(Dictionary<string, int> data);
 
     }
 }

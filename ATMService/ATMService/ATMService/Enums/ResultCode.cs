@@ -33,7 +33,7 @@
         /// <summary>
         /// There is not enought money in the ATM storage
         /// </summary>
-        WithDrawalCanNotServed,
+        WithDrawalNotPossible,
 
         /// <summary>
         /// An error has occured during the deposit process
