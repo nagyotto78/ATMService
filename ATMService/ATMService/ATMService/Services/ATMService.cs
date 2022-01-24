@@ -94,7 +94,7 @@ namespace ATMService.Services
                             Result = await _moneyStorageRepository.GetBalanceAsync()
                         };
 
-                        LogStorageState("ATM Storage after process:", storage);
+                        LogStorageState("ATM Storage after process:");
 
                     }
                     else
@@ -137,7 +137,7 @@ namespace ATMService.Services
                 // Load ATM storage
                 Dictionary<string, MoneyStorage> storage = await _moneyStorageRepository.Read(null, null, "MoneyDenomination")
                                                                                         .ToDictionaryAsync(k => k.MoneyDenomination.Key);
-                LogStorageState("ATM Storage before process:", storage);
+                LogStorageState("ATM Storage before process:");
 
                 // Evaluate value
                 Dictionary<string, int> denominations = EvaluateWithDrawalValue(storage, data);
@@ -163,7 +163,7 @@ namespace ATMService.Services
                         Result = denominations
                     };
 
-                    LogStorageState("ATM Storage after process:", storage);
+                    LogStorageState("ATM Storage after process:");
 
                 }
             }
@@ -304,7 +304,7 @@ namespace ATMService.Services
                 if (money != null)
                 {
                     money.Count += item.Value;
-                    await _moneyStorageRepository.UpdateAsync(money);
+                    await _moneyStorageRepository.UpdateAsync(money, false);
                 }
             }
             else if (availableDenominations != null && item.Value > 0)
@@ -316,7 +316,7 @@ namespace ATMService.Services
                     MoneyDenomination = availableDenominations[item.Key],
                     Count = item.Value
                 };
-                await _moneyStorageRepository.CreateAsync(money);
+                await _moneyStorageRepository.CreateAsync(money, false);
 
                 storage.Add(item.Key, money);
             }
@@ -325,22 +325,26 @@ namespace ATMService.Services
         /// <summary>
         /// Write log about the ATM storage current state
         /// </summary>
-        /// <param name="storage">ATM storage</param>
+        /// <param name="message">Logger message</param>
         /// <returns></returns>
-        private void LogStorageState(string message, Dictionary<string, MoneyStorage> storage)
+        private async void LogStorageState(string message)
         {
-            if (storage != null)
-            {
-                StringBuilder sb = new StringBuilder();
+            var storage = await _moneyStorageRepository.Read(null,
+                                                             i => i.OrderBy(d => d.MoneyDenomination.Value),
+                                                             "MoneyDenomination")
+                                                       .AsNoTracking()
+                                                       .Select(i => new { i.MoneyDenomination.Key, i.Count })
+                                                       .ToListAsync();
 
-                // Log the denominations count 
-                sb.AppendLine(message);
-                foreach (KeyValuePair<string, MoneyStorage> item in storage.OrderBy(i => i.Value.MoneyDenomination.Value))
-                {
-                    sb.AppendLine($"{item.Key} => {item.Value?.Count}");
-                }
-                _logger.LogInformation(sb.ToString());
+            StringBuilder sb = new StringBuilder();
+
+            // Log the denominations count 
+            sb.AppendLine(message);
+            foreach (var item in storage)
+            {
+                sb.AppendLine($"{item.Key} => {item.Count}");
             }
+            _logger.LogInformation(sb.ToString());
         }
 
         #endregion
