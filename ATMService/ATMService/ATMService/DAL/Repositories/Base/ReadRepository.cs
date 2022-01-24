@@ -33,7 +33,7 @@ namespace ATMService.DAL.Repositories.Base
                 query = query.Where(filter);
             }
 
-            includeProperties = includeProperties ?? "";
+            includeProperties ??= "";
             foreach (string includeProperty in includeProperties.Split
                 (new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
             {

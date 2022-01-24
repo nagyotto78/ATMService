@@ -37,7 +37,7 @@ namespace ATMService.Controllers
         [HttpPost]
         public async Task<IActionResult> DepositAsync(Dictionary<string, int> data)
         {
-            IActionResult retVal = null;
+            IActionResult retVal;
             OperationResult<int> result = await _service.DepositAsync(data);
             string logMessage;
 

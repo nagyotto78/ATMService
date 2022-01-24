@@ -56,7 +56,7 @@ namespace ATMService.Services
                     // Logging input data
                     _logger.LogInformation($"Input data : {JsonSerializer.Serialize(data)}");
 
-                    StringBuilder errorMessages = new StringBuilder();
+                    StringBuilder errorMessages = new ();
 
                     Dictionary<string, MoneyStorage> storage = await _moneyStorageRepository.Read(null, null, "MoneyDenomination")
                                                                                             .ToDictionaryAsync(k => k.MoneyDenomination.Key);
@@ -214,7 +214,7 @@ namespace ATMService.Services
         /// <param name="filteredStorage">Filtered ATM storage content</param>
         /// <param name="data">Required amount</param>
         /// <returns>Base matrix for evaluation</returns>
-        private int[,] CreateChangingMatrix(List<MoneyStorage> filteredStorage, int data)
+        private static int[,] CreateChangingMatrix(List<MoneyStorage> filteredStorage, int data)
         {
             int i = 0;
             int[,] retVal = null;
@@ -311,7 +311,7 @@ namespace ATMService.Services
             {
 
                 // Insert
-                MoneyStorage money = new MoneyStorage()
+                MoneyStorage money = new ()
                 {
                     MoneyDenomination = availableDenominations[item.Key],
                     Count = item.Value
@@ -336,7 +336,7 @@ namespace ATMService.Services
                                                        .Select(i => new { i.MoneyDenomination.Key, i.Count })
                                                        .ToListAsync();
 
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new ();
 
             // Log the denominations count 
             sb.AppendLine(message);

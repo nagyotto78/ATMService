@@ -35,7 +35,7 @@ namespace ATMService.Controllers
         [HttpPost]
         public async Task<IActionResult> WithDrawalAsync([FromBody] int data)
         {
-            IActionResult retVal = null;
+            IActionResult retVal;
             OperationResult<Dictionary<string, int>> result = await _service.WithDrawalAsync(data);
             string logMessage;
 
