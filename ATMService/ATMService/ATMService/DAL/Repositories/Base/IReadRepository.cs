@@ -27,6 +27,7 @@ namespace ATMService.DAL.Repositories.Base
         /// Find data by id
         /// </summary>
         /// <param name="id">Data primary key</param>
+        /// <param name="includeProperties">Navigation properties</param>
         /// <returns>Founded entity or null</returns>
         Task<T> FindByIdAsync(int id, 
                               string includeProperties = "");

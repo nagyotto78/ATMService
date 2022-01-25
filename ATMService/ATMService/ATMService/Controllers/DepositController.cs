@@ -2,8 +2,11 @@
 using ATMService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Swashbuckle.AspNetCore.Annotations;
+using Swashbuckle.AspNetCore.Filters;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
 namespace ATMService.Controllers
@@ -30,12 +33,30 @@ namespace ATMService.Controllers
 
 
         /// <summary>
-        /// Money deposit 
+        /// Money deposit. Available denominations: 1000, 2000, 5000, 10000, 20000
         /// </summary>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST api/deposit
+        ///             
+        ///     {
+        ///         "1000" : 5,
+        ///         "2000" : 2,
+        ///         "5000" : 1
+        ///         "10000" : 2
+        ///     }
+        ///     
+        /// </remarks>
         /// <param name="data">Money deposit per denomination</param>
-        /// <returns>Money balance</returns>
+        /// <response code="200">ATM balance</response>
+        /// <response code="400">If the request data contains not available denominations</response> 
+        /// <returns example="34000">Money balance</returns>
         [HttpPost]
-        public async Task<IActionResult> DepositAsync(Dictionary<string, int> data)
+        [Produces("application/json")]
+        [HttpPost]
+        [ProducesResponseType(typeof(int), 200)]
+        public async Task<IActionResult> DepositAsync([Required] Denominations data)
         {
             IActionResult retVal;
             OperationResult<int> result = await _service.DepositAsync(data);
@@ -53,7 +74,7 @@ namespace ATMService.Controllers
                     retVal = BadRequest(logMessage);
                     break;
                 default:
-                    logMessage = "ERROR-400.2 - Invalid dposit process result.";
+                    logMessage = "ERROR-400.2 - Invalid deposit process result.";
                     _logger.LogError(logMessage);
                     retVal = BadRequest(logMessage); //Invalid process result
                     break;

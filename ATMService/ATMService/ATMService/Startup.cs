@@ -1,5 +1,6 @@
 using ATMService.DAL;
 using ATMService.DAL.Repositories;
+using ATMService.Filters;
 using ATMService.Services;
 using ATMService.Utils;
 using Microsoft.AspNetCore.Builder;
@@ -8,9 +9,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace ATMService
 {
@@ -30,7 +32,32 @@ namespace ATMService
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "ATMService", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Title = "ATMService",
+                    Version = "v1",
+                    Description = "ATM money withdrawal and deposit simulations",
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Ottó Nagy",
+                        Email = "nagy.otto.78@gmail.com",
+                        Url = new Uri("https://www.linkedin.com/in/nagyotto/"),
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "ATMService API License",
+                        Url = new Uri("https://github.com/nagyotto78/ATMService/blob/main/LICENSE"),
+                    }
+                });
+
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                c.IncludeXmlComments(xmlPath);
+
+                // Configure examples for special objects
+                c.SchemaFilter<ExamplesSchemaFilter>();
+
             });
 
             // Database context and repositories

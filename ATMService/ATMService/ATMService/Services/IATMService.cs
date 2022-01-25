@@ -1,5 +1,4 @@
 ﻿using ATMService.Models;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ATMService.Services
@@ -16,14 +15,14 @@ namespace ATMService.Services
         /// </summary>
         /// <param name="data">Required money</param>
         /// <returns>Money denominations and counts</returns>
-        Task<OperationResult<Dictionary<string, int>>> WithDrawalAsync(int data);
+        Task<OperationResult<Denominations>> WithDrawalAsync(int data);
 
         /// <summary>
         /// Money deposit
         /// </summary>
         /// <param name="data">Money denominations and counts</param>
         /// <returns>ATM balance</returns>
-        Task<OperationResult<int>> DepositAsync(Dictionary<string, int> data);
+        Task<OperationResult<int>> DepositAsync(Denominations data);
 
     }
 }

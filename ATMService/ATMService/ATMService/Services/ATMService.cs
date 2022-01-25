@@ -41,7 +41,7 @@ namespace ATMService.Services
         /// </summary>
         /// <param name="data">Denominations count</param>
         /// <returns>ATM balance</returns>
-        public async Task<OperationResult<int>> DepositAsync(Dictionary<string, int> data)
+        public async Task<OperationResult<int>> DepositAsync(Denominations data)
         {
             OperationResult<int> retVal = null;
 
@@ -94,7 +94,7 @@ namespace ATMService.Services
                             Result = await _moneyStorageRepository.GetBalanceAsync()
                         };
 
-                        LogStorageState("ATM Storage after process:");
+                        await LogStorageState("ATM Storage after process:");
 
                     }
                     else
@@ -122,30 +122,30 @@ namespace ATMService.Services
 
         #region WithDrawal
 
-        public async Task<OperationResult<Dictionary<string, int>>> WithDrawalAsync(int data)
+        public async Task<OperationResult<Denominations>> WithDrawalAsync(int data)
         {
-            OperationResult<Dictionary<string, int>> retVal;
+            OperationResult<Denominations> retVal;
 
             ResultCode validationResult = await ValidateWithDrawal(data);
             if (validationResult == ResultCode.Valid)
             {
-                retVal = new OperationResult<Dictionary<string, int>>()
+                retVal = new OperationResult<Denominations>()
                 {
-                    Result = new Dictionary<string, int>()
+                    Result = new ()
                 };
 
                 // Load ATM storage
                 Dictionary<string, MoneyStorage> storage = await _moneyStorageRepository.Read(null, null, "MoneyDenomination")
                                                                                         .ToDictionaryAsync(k => k.MoneyDenomination.Key);
-                LogStorageState("ATM Storage before process:");
+                await LogStorageState("ATM Storage before process:");
 
                 // Evaluate value
-                Dictionary<string, int> denominations = EvaluateWithDrawalValue(storage, data);
+                Denominations denominations = EvaluateWithDrawalValue(storage, data);
 
                 if (denominations == null)
                 {
                     // The money withdrawal is not possible
-                    retVal = new OperationResult<Dictionary<string, int>>(ResultCode.WithDrawalNotPossible);
+                    retVal = new OperationResult<Denominations>(ResultCode.WithDrawalNotPossible);
                 }
                 else
                 {
@@ -158,19 +158,19 @@ namespace ATMService.Services
                     await _moneyStorageRepository.SaveChangesAsync();
 
                     // Set response value
-                    retVal = new OperationResult<Dictionary<string, int>>(ResultCode.Success)
+                    retVal = new OperationResult<Denominations>(ResultCode.Success)
                     {
                         Result = denominations
                     };
 
-                    LogStorageState("ATM Storage after process:");
+                    await LogStorageState("ATM Storage after process:");
 
                 }
             }
             else
             {
                 // Invalid source data
-                retVal = new OperationResult<Dictionary<string, int>>(validationResult);
+                retVal = new OperationResult<Denominations>(validationResult);
             }
 
             return retVal;
@@ -182,9 +182,9 @@ namespace ATMService.Services
         /// <param name="storage">ATM storage</param>
         /// <param name="data">Amount</param>
         /// <returns>Denomination collecton</returns>
-        private Dictionary<string, int> EvaluateWithDrawalValue(Dictionary<string, MoneyStorage> storage, int data)
+        private Denominations EvaluateWithDrawalValue(Dictionary<string, MoneyStorage> storage, int data)
         {
-            Dictionary<string, int> retVal = null;
+            Denominations retVal = null;
             List<MoneyStorage> filteredStorage = storage.Values.Where(i => i.MoneyDenomination.Value <= data).ToList();
             int[,] changingMatrix = CreateChangingMatrix(filteredStorage, data);    // Create changing matrix (Fill with available denominations)
 
@@ -195,7 +195,7 @@ namespace ATMService.Services
                 if (remaind == 0)
                 {
                     // Fill result dictionary
-                    retVal = new Dictionary<string, int>();
+                    retVal = new ();
                     for (int i = 0; i < changingMatrix.GetLength(0); i++)
                     {
                         if (changingMatrix[i, 2] > 0)
@@ -289,6 +289,7 @@ namespace ATMService.Services
         /// Apply changes by denomination item
         /// </summary>
         /// <param name="availableDenominations">Available denominations</param>
+        /// <param name="storage">ATM storage content</param>
         /// <param name="item">Source item</param>
         /// <returns></returns>
         private async Task ChangeDenominationStorage(Dictionary<string, MoneyDenomination> availableDenominations,
@@ -327,7 +328,7 @@ namespace ATMService.Services
         /// </summary>
         /// <param name="message">Logger message</param>
         /// <returns></returns>
-        private async void LogStorageState(string message)
+        private async Task LogStorageState(string message)
         {
             var storage = await _moneyStorageRepository.Read(null,
                                                              i => i.OrderBy(d => d.MoneyDenomination.Value),

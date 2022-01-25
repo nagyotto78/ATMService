@@ -3,6 +3,7 @@ using ATMService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -30,19 +31,32 @@ namespace ATMService.Controllers
         /// <summary>
         /// Money withdrawal 
         /// </summary>
-        /// <param name="data">Required money</param>
-        /// <returns>Withdrawn money per denomination</returns>
+        /// <remarks>
+        /// Sample request:
+        /// 
+        ///     POST api/withdrawal
+        ///             
+        ///     34000
+        ///     
+        /// </remarks>
+        /// <param name="data" example="34000">Amount</param>
+        /// <returns>Withdrawn amount per denomination</returns>
+        /// <response code="200">Withdrawn amount per denomination</response>
+        /// <response code="400">If the amount is not divisible by 1000 or not greater than zero</response> 
+        /// <response code="503">If the amount withdrawal is not possible</response> 
         [HttpPost]
-        public async Task<IActionResult> WithDrawalAsync([FromBody] int data)
+        [Produces("application/json")]
+        [ProducesResponseType(typeof(Denominations), 200)]
+        public async Task<IActionResult> WithDrawalAsync([FromBody][Required] int data)
         {
             IActionResult retVal;
-            OperationResult<Dictionary<string, int>> result = await _service.WithDrawalAsync(data);
+            OperationResult<Denominations> result = await _service.WithDrawalAsync(data);
             string logMessage;
 
             switch (result?.ResultCode)
             {
                 case Enums.ResultCode.Success:
-                    _logger.LogInformation($"Withdrawed money: {JsonSerializer.Serialize(result.Result)}");
+                    _logger.LogInformation($"Withdrawn amount: {JsonSerializer.Serialize(result.Result)}");
                     retVal = Ok(result.Result);
                     break;
                 case Enums.ResultCode.WithDrawalInvalidNumber:
