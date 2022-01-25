@@ -270,13 +270,15 @@ namespace ATMService.Services
                 // Amount is not divisible by 1000 or less than zero
                 retVal = ResultCode.WithDrawalInvalidNumber;
             }
-
-            // Balance checking
-            int balance = await _moneyStorageRepository.GetBalanceAsync();
-            if (balance < data)
+            else
             {
-                // Amount is greater than the ATM balance
-                retVal = ResultCode.WithDrawalNotPossible;
+                // Balance checking
+                int balance = await _moneyStorageRepository.GetBalanceAsync();
+                if (balance < data)
+                {
+                    // Amount is greater than the ATM balance
+                    retVal = ResultCode.WithDrawalNotPossible;
+                }
             }
             return retVal;
         }
