@@ -56,7 +56,7 @@ namespace ATMService.Services
                     // Logging input data
                     _logger.LogInformation($"Input data : {JsonSerializer.Serialize(data)}");
 
-                    StringBuilder errorMessages = new ();
+                    StringBuilder errorMessages = new();
 
                     Dictionary<string, MoneyStorage> storage = await _moneyStorageRepository.Read(null, null, "MoneyDenomination")
                                                                                             .ToDictionaryAsync(k => k.MoneyDenomination.Key);
@@ -131,7 +131,7 @@ namespace ATMService.Services
             {
                 retVal = new OperationResult<Denominations>()
                 {
-                    Result = new ()
+                    Result = new()
                 };
 
                 // Load ATM storage
@@ -195,7 +195,7 @@ namespace ATMService.Services
                 if (remaind == 0)
                 {
                     // Fill result dictionary
-                    retVal = new ();
+                    retVal = new();
                     for (int i = 0; i < changingMatrix.GetLength(0); i++)
                     {
                         if (changingMatrix[i, 2] > 0)
@@ -314,7 +314,7 @@ namespace ATMService.Services
             {
 
                 // Insert
-                MoneyStorage money = new ()
+                MoneyStorage money = new()
                 {
                     MoneyDenomination = availableDenominations[item.Key],
                     Count = item.Value
@@ -332,22 +332,31 @@ namespace ATMService.Services
         /// <returns></returns>
         private async Task LogStorageState(string message)
         {
-            var storage = await _moneyStorageRepository.Read(null,
-                                                             i => i.OrderBy(d => d.MoneyDenomination.Value),
-                                                             "MoneyDenomination")
-                                                       .AsNoTracking()
-                                                       .Select(i => new { i.MoneyDenomination.Key, i.Count })
-                                                       .ToListAsync();
-
-            StringBuilder sb = new ();
-
-            // Log the denominations count 
-            sb.AppendLine(message);
-            foreach (var item in storage)
+            try
             {
-                sb.AppendLine($"{item.Key} => {item.Count}");
+
+                var storage = await _moneyStorageRepository.Read(null,
+                                                                 i => i.OrderBy(d => d.MoneyDenomination.Value),
+                                                                 "MoneyDenomination")
+                                                           .AsNoTracking()
+                                                           .Select(i => new { i.MoneyDenomination.Key, i.Count })
+                                                           .ToListAsync();
+
+                StringBuilder sb = new();
+
+                // Log the denominations count 
+                sb.AppendLine(message);
+                foreach (var item in storage)
+                {
+                    sb.AppendLine($"{item.Key} => {item.Count}");
+                }
+                _logger.LogInformation(sb.ToString());
             }
-            _logger.LogInformation(sb.ToString());
+            catch (Exception exc)
+            {
+                _logger.LogWarning($"An error has occured during the ATM storage content showing: {exc}");
+            }
+
         }
 
         #endregion

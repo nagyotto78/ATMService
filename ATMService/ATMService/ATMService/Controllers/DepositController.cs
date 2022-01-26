@@ -2,10 +2,7 @@
 using ATMService.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Annotations;
-using Swashbuckle.AspNetCore.Filters;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 
@@ -51,7 +48,7 @@ namespace ATMService.Controllers
         /// <param name="data">Money deposit per denomination</param>
         /// <response code="200">ATM balance</response>
         /// <response code="400">If the request data contains not available denominations</response> 
-        /// <returns example="34000">Money balance</returns>
+        /// <returns>Money balance</returns>
         [HttpPost]
         [Produces("application/json")]
         [HttpPost]
